@@ -1,0 +1,8 @@
+fastapi[all]
+uvicorn
+autogen
+python-dotenv
+langchainhub
+langchain
+langgraph
+langchain-google-vertexai
