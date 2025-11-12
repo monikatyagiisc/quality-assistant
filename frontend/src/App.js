@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-
 import './App.css';
+import imageUrl from 'url:./image.png';
+
  
 function App() {
 
@@ -17,11 +18,42 @@ function App() {
   const [stlcResult, setStlcResult] = useState(null);
 
   const [error, setError] = useState(null);
+
   const [copiedTC, setCopiedTC] = useState(false);
   const [copiedMap, setCopiedMap] = useState({});
   const [copiedAll, setCopiedAll] = useState(false);
 
+
+  const [isRequirementsOpen, setIsRequirementsOpen] = useState(true);
+
+  const [isUserStoriesOpen, setIsUserStoriesOpen] = useState(false);
+
+  const [isCodeDiffsOpen, setIsCodeDiffsOpen] = useState(false);
+
+  const [isPreviousTestResultsOpen, setIsPreviousTestResultsOpen] = useState(false);
+ 
+
   const backendUrl = 'http://localhost:8000';
+
+  // Handle file upload for Software Requirements
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // Check if it's a text file
+      if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setRequirements(e.target.result);
+        };
+        reader.onerror = () => {
+          setError('Failed to read file. Please try again.');
+        };
+        reader.readAsText(file);
+      } else {
+        setError('Please upload a valid text file (.txt)');
+      }
+    }
+  };
  
   const MAX_REQ_LEN = 1000;
   const handleRequirementsChange = (e) => {
@@ -116,7 +148,7 @@ function App() {
             onClick={async () => {
               await navigator.clipboard.writeText(value || '');
               setCopiedMap((prev) => ({ ...prev, [label]: true }));
-              setTimeout(() => setCopiedMap((prev) => ({ ...prev, [label]: false })), 1000);
+              setTimeout(() => setCopiedMap((prev) => ({ ...prev, [label]: false })), 2000);
             }}
             className={`copy-btn ${copiedMap[label] ? 'copied' : ''}`}
           >
@@ -130,7 +162,17 @@ function App() {
   return (
 <div className="App">
 <header className="App-header">
-<h1>AI-Powered STLC Orchestrator</h1>
+<div className="header-content">
+<img 
+            src={imageUrl} 
+            alt="Quality Assistant Agent Logo" 
+            className="header-logo"
+          />
+<div className="header-text">
+<h1>Quality Assistant Agent</h1>
+<h2>Driving Intelligent Test Automation</h2>
+</div>
+</div>
 </header>
 <main className="App-main">
 
@@ -176,27 +218,101 @@ function App() {
 
 <div className="input-section">
 <h2>Input Software Details</h2>
-<div className="input-group">
-<label htmlFor="requirements">Software Requirements:</label>
-<textarea id="requirements" rows="5" value={requirements} onChange={handleRequirementsChange} maxLength={MAX_REQ_LEN}></textarea>
-<div style={{ textAlign: 'right', fontSize: '12px', color: '#555' }}>{requirements.length} / {MAX_REQ_LEN}</div>
+<div className="accordion-item">
+<div 
+            className="accordion-header" 
+            onClick={() => setIsRequirementsOpen(!isRequirementsOpen)}
+          >
+<span>Requirements</span>
+<span className="accordion-icon">{isRequirementsOpen ? '−' : '+'}</span>
+
 </div>
+          {isRequirementsOpen && (
+<div className="accordion-content">
+<div className="input-group">
+<label htmlFor="requirements">Enter a requirement, and the Quality Assistant Agent will generate relevant test cases, along with additional analysis outputs.</label>
+
+<textarea 
+                  id="requirements" 
+                  rows="5" 
+                  value={requirements} 
+                  onChange={(e) => setRequirements(e.target.value)}
+                  placeholder=" Requirements"
+                ></textarea>
+<div className="file-upload-container">
+<input 
+                      type="file" 
+                      id="fileUpload" 
+                      accept=".txt,text/plain" 
+                      onChange={handleFileUpload}
+                      style={{ marginBottom: '10px' }}
+                    />
+<label htmlFor="fileUpload" style={{ fontSize: '0.9em', color: '#666' }}>
+                      Upload a text file or type above
+</label>
+</div>
+</div>
+</div>
+          )}
+</div>
+<div className="accordion-item">
+<div 
+            className="accordion-header" 
+            onClick={() => setIsUserStoriesOpen(!isUserStoriesOpen)}
+          >
+<span>User Stories (Optional)</span>
+<span className="accordion-icon">{isUserStoriesOpen ? '−' : '+'}</span>
+</div>
+          {isUserStoriesOpen && (
+<div className="accordion-content">
 <div className="input-group">
 <label htmlFor="userStories">User Stories (Optional):</label>
 <textarea id="userStories" rows="3" value={userStories} onChange={(e) => setUserStories(e.target.value)}></textarea>
 </div>
+</div>
+          )}
+</div>
+<div className="accordion-item">
+<div 
+            className="accordion-header" 
+            onClick={() => setIsCodeDiffsOpen(!isCodeDiffsOpen)}
+          >
+<span>Code Diffs (Optional)</span>
+<span className="accordion-icon">{isCodeDiffsOpen ? '−' : '+'}</span>
+</div>
+          {isCodeDiffsOpen && (
+<div className="accordion-content">
 <div className="input-group">
 <label htmlFor="codeDiffs">Code Diffs (Optional):</label>
 <textarea id="codeDiffs" rows="4" value={codeDiffs} onChange={(e) => setCodeDiffs(e.target.value)}></textarea>
 </div>
+</div>
+          )}
+</div>
+<div className="accordion-item">
+<div 
+            className="accordion-header" 
+            onClick={() => setIsPreviousTestResultsOpen(!isPreviousTestResultsOpen)}
+          >
+<span>Previous Test Results (Optional)</span>
+<span className="accordion-icon">{isPreviousTestResultsOpen ? '−' : '+'}</span>
+</div>
+          {isPreviousTestResultsOpen && (
+<div className="accordion-content">
 <div className="input-group">
 <label htmlFor="previousTestResults">Previous Test Results (Optional):</label>
 <textarea id="previousTestResults" rows="3" value={previousTestResults} onChange={(e) => setPreviousTestResults(e.target.value)}></textarea>
 </div>
-<div className="disclaimer-text">Do not enter P11 or sensitive data.</div>
+
+<div className="disclaimer-text">Do not enter personal or sensitive information. Use only technical or system-related data</div>
+
+</div>
+          )}
+</div>
+
 <button onClick={handleStartStlc} disabled={loading || !requirements}>
 
-            {loading ? 'Running STLC...' : 'Start STLC Process'}
+            {loading ? 'Running...' : 'Start Process'}
 </button>
 </div>
  
@@ -211,7 +327,7 @@ function App() {
         {stlcResult && (
 <div className="output-section">
 <div className="section-header">
-  <h2>STLC Results</h2>
+  <h1>Software Testing Lifecycle Results</h1>
   <button
     className={`copy-btn ${copiedAll ? 'copied' : ''}`}
     onClick={() => {
@@ -233,12 +349,12 @@ function App() {
       if (all) {
         navigator.clipboard.writeText(all).then(() => {
           setCopiedAll(true);
-          setTimeout(() => setCopiedAll(false), 1000);
+          setTimeout(() => setCopiedAll(false), 2000);
         });
       }
     }}
   >
-    {copiedAll ? 'Copied!' : 'Copy All'}
+    {copiedAll ? 'Copied All!' : 'Copy All Results'}
   </button>
 </div>
  
